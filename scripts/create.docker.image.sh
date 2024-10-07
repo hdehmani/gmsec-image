@@ -64,6 +64,14 @@ METADATA_FILE_NAME=hassan.metadata.json
 # IMPORTANT: Use lower case for the name part of the --build-context
 # This is the error you get: ERROR: invalid context name GMSEC_API_TAR_GZ_FILE_DIR: invalid reference format: repository name must be lowercase
 ###########################################################################################
+# See: https://docs.docker.com/reference/cli/docker/buildx/build/#output
+# -o, --output=[PATH,-,type=TYPE[,KEY=VALUE]
+# Sets the export action for the build result. The default output, when using the docker build driver, is a container image exported to the local image store. 
+# The --output flag makes this step configurable allows export of results directly to the client's filesystem, an OCI image tarball, a registry, and more.
+# Buildx with docker driver only supports the local, tarball, and image exporters. The docker-container driver supports all exporters.
+# If you only specify a filepath as the argument to --output, Buildx uses the local exporter. 
+# If the value is -, Buildx uses the tar exporter and writes the output to stdout.
+
 # --load: Shorthand for --output=type=docker. Will automatically load the single-platform build result to docker images.
 # --output=type=docker: 
 ###########################################################################################
