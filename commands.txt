@@ -1,0 +1,11 @@
+1- docker container remove gmsec-base-container
+
+2- docker image remove localhost:5000/gmsec-base-image:1.0
+
+3- ./create.gmsec.base.docker.image.sh
+
+4- docker run -it --name gmsec-base-container localhost:5000/gmsec-base-image:1.0 bash
+
+5- http://localhost:5000/v2/_catalog
+
+6- http://localhost:5000/v2/gmsec-base-image/tags/list
