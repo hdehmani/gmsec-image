@@ -33,15 +33,21 @@ RUN tar -xvzf ${GMSEC_API_TAR_GZ_FILE_NAME}
 
 ENV PATH="${GMSEC_HOME}/bin:${PATH}"
 
+# For using the Java binding of the GMSEC API
+
+ENV CLASSPATH=$GMSEC_HOME/bin/gmsecapi.jar
+
 # Remove the tar archive file from the WORKDIR
 
 RUN rm ${GMSEC_API_TAR_GZ_FILE_NAME}
 
-# Remove not needed directories (to save space): docs and examples
+# Remove not needed directories (to save space): docs
 
 RUN rm -r ${GMSEC_HOME}/docs
 
-RUN rm -r ${GMSEC_HOME}/examples
+# Remove not needed directories (to save space): examples
+
+#RUN rm -r ${GMSEC_HOME}/examples
 
 CMD []
 

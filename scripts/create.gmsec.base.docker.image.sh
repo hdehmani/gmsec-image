@@ -69,6 +69,8 @@ METADATA_FILE_NAME=${DOCKERFILE_PATH}.metadata.json
 # --load: Shorthand for --output type=docker. Will automatically load the single-platform build result to the local docker image store.
 # --output type=docker: The docker export type writes the single-platform result image as a Docker image specification tarball on the client. 
 #                       Tarballs created by this exporter are also OCI compatible.
+# --output type=registry: The docker export type writes the single-platform result image as a Docker image specification tarball on the client. 
+#                       Tarballs created by this exporter are also OCI compatible.
 ###########################################################################################
 # --metadata-file some-metadata-file.json:  To output build metadata such as the image digest, pass the --metadata-file flag. 
 #                                           The metadata will be written as a JSON object to the specified file. 
@@ -79,7 +81,6 @@ METADATA_FILE_NAME=${DOCKERFILE_PATH}.metadata.json
 #               If unspecified, a file named Dockerfile at the root of the build context is used by default.               
 ###########################################################################################
 
-#docker buildx build --output type=docker \
 docker buildx build --output type=registry \
                     --metadata-file ${METADATA_FILE_NAME} \
                     --build-context gmsec_api_tar_gz_file_dir=${GMSEC_API_TAR_GZ_FILE_DIR}  \

@@ -1,3 +1,5 @@
+GMSEC oprations:
+
 1- docker container remove gmsec-base-container
 
 2- docker image remove localhost:5000/gmsec-base-image:1.0
@@ -6,6 +8,308 @@
 
 4- docker run -it --name gmsec-base-container localhost:5000/gmsec-base-image:1.0 bash
 
-5- http://localhost:5000/v2/_catalog
+JAVA oprations:
 
-6- http://localhost:5000/v2/gmsec-base-image/tags/list
+1- docker container remove gmsec-java-container
+
+2- docker image remove localhost:5000/gmsec-java-image:1.0
+
+3- ./create.gmsec.java.docker.image.sh
+
+4- docker run -it --name gmsec-java-container localhost:5000/gmsec-java-image:1.0 bash
+
+Private Registry operations:
+
+1- http://localhost:5000/v2/_catalog
+
+2- http://localhost:5000/v2/gmsec-base-image/tags/list
+
+3- http://localhost:5000/v2/gmsec-java-image/tags/list
+
+=====================================
+Testing:
+=====================================
+
+============================================
+Start the Bolt server in a Docker container:
+============================================
+
+1- docker container remove gmsec-java-container-bolt
+
+2- docker run -it --name gmsec-java-container-bolt localhost:5000/gmsec-java-image:1.0 bash
+
+3- cd $GMSEC_HOME/bin
+
+4- java -jar bolt.jar
+
+5- The Bolt server will be running and listing as follows: 0.0.0.0:9100
+
+6- IMPORTANT:
+
+    We need to know the IP address of this container running the Bolt server.
+    This way, other clients trying to communicate with this Bolt Server, will use this IP address to communicate
+    How do we get the IP address of a running Docker container?
+    Here's the tutorial for Container IP address: https://www.tutorialworks.com/container-networking/
+    
+7- Here are some notes from the above tutorial:
+
+    a. Most container-based applications talk to each other using networking.
+    b. This basically means that an application running in one container will create a network connection to a port on another container.
+    c. With Docker, container-to-container communication is usually done using a virtual network.
+    d. If you are running more than one container, you can let your containers communicate with each other by attaching them to the same network.
+    e. Docker creates virtual networks which let your containers talk to each other
+    f. In a network, a container has an IP address, and optionally a hostname.
+    g. The default bridge network, allows simple container-to-container communication by IP address, and is created by default.
+    h. A user-defined bridge network, which you create yourself, and allows your containers to communicate with each other, by using their container name as a hostname.
+    i. The simplest network in Docker is the bridge network. It’s also Docker’s default networking driver.
+    j. A bridge network gives you simple communication between containers on the same host.
+    k. When Docker starts up, it will create a default network called "bridge". It should start automatically, without any configuration required by you.
+    l. From that point onwards, all containers are added into to the bridge network, unless you say otherwise.
+    m. IMPORTANT: In a bridge network, each container is assigned its own IP address. So containers can communicate with each other by IP.
+    n. Use this command to list the networks in Docker: "docker network ls"
+
+            NETWORK ID     NAME       DRIVER    SCOPE
+            d0f10f417bef   bridge     bridge    local
+            4d00c4eb1f44   host       host      local
+            a06195794c24   minikube   bridge    local
+            60eb0f7cf530   none       null      local
+
+    o. When you start a container using "docker run...", Docker will add it to the bridge network.
+    p. You can be explicit about the network connection by adding --net=bridge to the docker run command.
+    q. Now one container can talk to another, by using its IP address.
+    r. You’l need to know the IP address of the container.  So, how to find out the IP address of a container.
+    s. To find the IP addresses of a container, look at the output of the docker inspect command (use The Bolt Server Docker container name):
+
+        docker inspect gmsec-java-container-bolt | grep IPAddress
+
+            "SecondaryIPAddresses": null,
+            "IPAddress": "172.17.0.3",
+                    "IPAddress": "172.17.0.3",
+    t. From the above output, the IP address of the Bolt Server Docker container is "172.17.0.3"
+    u. We can use this IP address as the value for mw-server=172.17.0.3 in the below commands to subscribe and publish using the Bolt Server container
+    v. Use the "docker network inspect bridge" command to show all the containers currently attached to the "bridge" network:
+
+    {
+        "Name": "bridge",
+        "Id": "d0f10f417befd80d277d5dddbc6369591a7dc534ab5ac751449404efef49376a",
+        "Created": "2024-10-07T16:02:36.1069806-04:00",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": null,
+            "Config": [
+                {
+                    "Subnet": "172.17.0.0/16",
+                    "Gateway": "172.17.0.1"
+                }
+            ]
+        }
+        ..
+        ..
+        "Containers": {
+            "3962131023ae88b911c969639f49bb7ee4fe424bb6425a834e1601d5330b207a": {
+                "Name": "gmsec-java-container-bolt-publish",
+                "EndpointID": "2d82e3f24e13383c8d6a24fd70afe72b7df48fe9d05db6cfc1ecde879ec6d461",
+                "MacAddress": "02:42:ac:11:00:05",
+                "IPv4Address": "172.17.0.5/16",
+                "IPv6Address": ""
+            },
+            "ae98223ad2d3c12c7059b58ede37469433c5defa8dd23217d01d1249cada1a1e": {
+                "Name": "gmsec-java-container-bolt-subscribe",
+                "EndpointID": "4493cd9008a4fc521a2f75dd123214385425fcb49acb537462a7067ea29b8ee7",
+                "MacAddress": "02:42:ac:11:00:04",
+                "IPv4Address": "172.17.0.4/16",
+                "IPv6Address": ""
+            },
+            "fa376a956d84d7319ab9c0280bcdcee62bb6ce4ea232098cb836948bf9069b0e": {
+                "Name": "gmsec-java-container-bolt",
+                "EndpointID": "2d0c8e16b0d1626f981c60350210fd5904f6452b3e39c504c16c19b97d21a613",
+                "MacAddress": "02:42:ac:11:00:03",
+                "IPv4Address": "172.17.0.3/16",
+                "IPv6Address": ""
+            }
+        }
+
+    }
+
+    x. The default bridge is ok.  However, this means that every container can see every other container.
+    y. A better option is: a user-defined network, so that you can be more granular about which containers can see each other.
+    z. If you only use the default bridge network, then all your containers can see and access other containers’ ports. This isn’t always what you want!
+
+8. Let's create a user-defined network:
+
+    a. To let Docker containers communicate with each other by "name", you can create a user-defined bridge network
+    b. In a user-defined bridge network, you can be more explicit about who joins the network, and your containers can be addressed by their name or alias, instead of IP address
+    c. In a user-defined bridge network, you control which containers are in the network, and they can address each other by hostname
+    d. When containers are joined to the user-defined bridge network, they can address each other by the container's name.
+    e. This means you don’t need to worry about keeping track of containers’ IP addresses, which can frequently change.
+    f. Create a user-defined bridge network using this command "docker network create". Under the hood, Docker sets up the relevant networking tables on your operating system.
+    g. Example: docker network create my-bolt-network
+    h. Start a container and connect it to the bridge using "--net my-bolt-network"
+
+    Example: 
+    
+        Create the network:
+
+            docker network create my-bolt-network
+
+            docker network ls
+
+                NETWORK ID     NAME              DRIVER    SCOPE
+                d0f10f417bef   bridge            bridge    local
+                4d00c4eb1f44   host              host      local
+                a06195794c24   minikube          bridge    local
+                b5d428b6fe40   my-bolt-network   bridge    local
+                60eb0f7cf530   none              null      local
+
+        Start Bolt Server:
+
+            docker container remove gmsec-java-container-bolt
+            docker run -it --name gmsec-java-container-bolt --net my-bolt-network localhost:5000/gmsec-java-image:1.0 bash
+            cd $GMSEC_HOME/bin
+            java -jar bolt.jar 
+
+        Subscribe as follows:
+
+            docker container remove gmsec-java-container-bolt-subscribe
+            docker run -it --name gmsec-java-container-bolt-subscribe --net my-bolt-network localhost:5000/gmsec-java-image:1.0 bash
+            cd $GMSEC_HOME/examples/java
+            Compile all .java files in the above directory: javac *.java
+            java -cp "$CLASSPATH:." subscribe mw-id=bolt mw-server=gmsec-java-container-bolt
+
+
+            Received Message:
+                <MESSAGE SUBJECT="C2MS.MY-DOMAIN-1.MY-DOMAIN-2.MY-MISSION.MY-CNST.MY-SAT-ID.MSG.HB.PUBLISH" KIND="PUBLISH">
+                        <FIELD NAME="COMPONENT" TYPE="STRING">PUBLISH</FIELD>
+                        <FIELD NAME="CONNECTION-ID" TYPE="U32">1</FIELD>
+                        <FIELD NAME="CONSTELLATION-ID" TYPE="STRING">MY-CNST</FIELD>
+                        <FIELD NAME="CONTENT-VERSION" TYPE="F32" BITS="44FC6000">2019</FIELD>
+                        <FIELD NAME="DOMAIN1" TYPE="STRING">MY-DOMAIN-1</FIELD>
+                        <FIELD NAME="DOMAIN2" TYPE="STRING">MY-DOMAIN-2</FIELD>
+                        <FIELD NAME="FACILITY" TYPE="STRING">MY-FACILITY</FIELD>
+                        <FIELD NAME="HEADER-VERSION" TYPE="F32" BITS="44FC6000">2019</FIELD>
+                        <FIELD NAME="MESSAGE-SUBTYPE" TYPE="STRING">HB</FIELD>
+                        <FIELD NAME="MESSAGE-TYPE" TYPE="STRING">MSG</FIELD>
+                        <FIELD NAME="MISSION-ID" TYPE="STRING">MY-MISSION</FIELD>
+                        <FIELD NAME="MW-CONNECTION-ENDPOINT" TYPE="STRING">gmsec-java-container-bolt:9100</FIELD>
+                        <FIELD NAME="MW-INFO" TYPE="STRING">gmsec_bolt</FIELD>
+                        <FIELD NAME="NODE" TYPE="STRING">3EEBA092F56E</FIELD>
+                        <FIELD NAME="NUM-OF-SUBSCRIPTIONS" TYPE="U16">0</FIELD>
+                        <FIELD NAME="PROCESS-ID" TYPE="U32">36</FIELD>
+                        <FIELD NAME="PUBLISH-TIME" TYPE="STRING">2024-291-21:52:17.137</FIELD>
+                        <FIELD NAME="SAT-ID-LOGICAL" TYPE="STRING">MY-SAT-ID</FIELD>
+                        <FIELD NAME="SAT-ID-PHYSICAL" TYPE="STRING">MY-SAT-ID</FIELD>
+                        <FIELD NAME="SPECIFICATION" TYPE="STRING">C2MS</FIELD>
+                        <FIELD NAME="UNIQUE-ID" TYPE="STRING">GMSEC_3EEBA092F56E_671187111D50_36_1_1</FIELD>
+                        <FIELD NAME="USER-NAME" TYPE="STRING">ROOT</FIELD>
+                </MESSAGE>
+
+
+        Publish as follows:
+
+            docker container remove gmsec-java-container-bolt-publish
+            docker run -it --name gmsec-java-container-bolt-publish --net my-bolt-network localhost:5000/gmsec-java-image:1.0 bash
+            cd $GMSEC_HOME/examples/java
+            Compile all .java files in the above directory: javac *.java
+            java -cp "$CLASSPATH:." publish mw-id=bolt mw-server=gmsec-java-container-bolt
+
+            Publishing Message:
+                <MESSAGE SUBJECT="C2MS.MY-DOMAIN-1.MY-DOMAIN-2.MY-MISSION.MY-CNST.MY-SAT-ID.MSG.HB.PUBLISH" KIND="PUBLISH">
+                        <FIELD NAME="COMPONENT" TYPE="STRING">PUBLISH</FIELD>
+                        <FIELD NAME="CONSTELLATION-ID" TYPE="STRING">MY-CNST</FIELD>
+                        <FIELD NAME="CONTENT-VERSION" TYPE="F32" BITS="44FC6000">2019</FIELD>
+                        <FIELD NAME="DOMAIN1" TYPE="STRING">MY-DOMAIN-1</FIELD>
+                        <FIELD NAME="DOMAIN2" TYPE="STRING">MY-DOMAIN-2</FIELD>
+                        <FIELD NAME="FACILITY" TYPE="STRING">MY-FACILITY</FIELD>
+                        <FIELD NAME="HEADER-VERSION" TYPE="F32" BITS="44FC6000">2019</FIELD>
+                        <FIELD NAME="MESSAGE-SUBTYPE" TYPE="STRING">HB</FIELD>
+                        <FIELD NAME="MESSAGE-TYPE" TYPE="STRING">MSG</FIELD>
+                        <FIELD NAME="MISSION-ID" TYPE="STRING">MY-MISSION</FIELD>
+                        <FIELD NAME="SAT-ID-LOGICAL" TYPE="STRING">MY-SAT-ID</FIELD>
+                        <FIELD NAME="SAT-ID-PHYSICAL" TYPE="STRING">MY-SAT-ID</FIELD>
+                        <FIELD NAME="SPECIFICATION" TYPE="STRING">C2MS</FIELD>
+                </MESSAGE>
+
+
+
+
+Basically, use this command: 
+
+
+======================================
+Subscribe to the Bolt server messages:
+======================================
+
+1- docker container remove gmsec-java-container-bolt-subscribe
+
+2- docker run -it --name gmsec-java-container-bolt-subscribe localhost:5000/gmsec-java-image:1.0 bash
+
+3- cd $GMSEC_HOME/examples/java
+
+4- Compile all .java files in the above directory: javac *.java
+    
+5- java -cp "$CLASSPATH:." subscribe mw-id=bolt mw-server=172.17.0.3 (The IP address of the above running container gmsec-java-container-bolt)
+
+=====================================
+Publish a message to the Bolt server:
+=====================================
+
+1- docker container remove gmsec-java-container-bolt-publish
+
+2- docker run -it --name gmsec-java-container-bolt-publish localhost:5000/gmsec-java-image:1.0 bash
+
+3- cd $GMSEC_HOME/examples/java
+    
+4- Compile all .java files in the above directory: javac *.java
+
+5- java -cp "$CLASSPATH:." publish mw-id=bolt mw-server=172.17.0.3 (The IP address of the above running container gmsec-java-container-bolt)
+
+
+=====================================
+GMSEC Bolt
+=====================================
+
+1- The GMSEC Bolt middleware broker is included with the GMSEC API.
+2- It provides a basic set of capabilities useful in a development and test environment
+3- The Bolt middleware is automatically installed at the time of the GMSEC API installation.
+4- Here are some of the important Bolt Server Configuration Parameters:
+
+    a. port = 9100 = default (Example: java –jar bolt.jar port=9334)
+    b. mw-id = bolt (Identifies to the GMSEC API to load the Bolt middleware wrapper library)
+    c. mw-server = localhost (Example: mw-server = 10.1.2.159.  Comma-delimited list of server names or IP addresses. The default server is localhost. The default port is 9100.)
+
+5- Example: java –jar bolt.jar port=9334 mw-id=bolt mw-server=10.1.2.159
+
+=====================================
+Tutorial:
+=====================================
+
+https://www.tutorialworks.com/container-networking/
+
+
+
+Bolt server:
+
+1- Start the Bolt server:
+
+    a. cd $GMSEC_HOME/bin
+
+    b. java -jar bolt.jar
+
+    c. Bolt server running and listing as follows: 0.0.0.0:9100
+
+2- Subscribe to Bolt server:
+
+    a. cd $GMSEC_HOME/examples/java
+
+    b. Compile all .java files in the above directory: javac *.java
+    
+    b. java -cp "$CLASSPATH:." subscribe mw-id=bolt mw-server=gmsec-java-container-bolt
+
+3- Publish to Bolt server:
+
+    a. cd $GMSEC_HOME/examples/java
+    
+    b. java -cp "$CLASSPATH:." publish mw-id=bolt
