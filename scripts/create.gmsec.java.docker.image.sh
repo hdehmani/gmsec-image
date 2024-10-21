@@ -16,7 +16,7 @@ IMAGE_TAG=1.0
 
 # Directory of the JAVA compressed tar file
 
-JAVA_TAR_GZ_FILE_DIR=/mnt/c/MyDevelopment/downloads/Java
+JAVA_TAR_GZ_FILE_DIR=$JAVA_DIR
 
 # Name of the JAVA tar archive
 
@@ -62,34 +62,35 @@ METADATA_FILE_NAME=${DOCKERFILE_PATH}.metadata.json
 ###########################################################################################
 # See: https://docs.docker.com/reference/cli/docker/buildx/build/#output
 # -o, --output=[PATH,-,type=TYPE[,KEY=VALUE]
-# Sets the export action for the build result. The default output, when using the docker build driver, is a container image exported to the local image store. 
+# Sets the export action for the build result. The default output, when using the docker build driver, is a container image exported to the local image store.
 # The --output flag makes this step configurable allows export of results directly to the client's filesystem, an OCI image tarball, a registry, and more.
 # Buildx with docker driver only supports the local, tarball, and image exporters. The docker-container driver supports all exporters.
-# If you only specify a filepath as the argument to --output, Buildx uses the local exporter. 
+# If you only specify a filepath as the argument to --output, Buildx uses the local exporter.
 # If the value is -, Buildx uses the tar exporter and writes the output to stdout.
 
 # --load: Shorthand for --output type=docker. Will automatically load the single-platform build result to the local docker image store.
-# --output type=docker: The docker export type writes the single-platform result image as a Docker image specification tarball on the client. 
+# --output type=docker: The docker export type writes the single-platform result image as a Docker image specification tarball on the client.
 #                       Tarballs created by this exporter are also OCI compatible.
-# --output type=registry: The docker export type writes the single-platform result image as a Docker image specification tarball on the client. 
+# --output type=registry: The docker export type writes the single-platform result image as a Docker image specification tarball on the client.
 #                       Tarballs created by this exporter are also OCI compatible.
 ###########################################################################################
-# --metadata-file some-metadata-file.json:  To output build metadata such as the image digest, pass the --metadata-file flag. 
-#                                           The metadata will be written as a JSON object to the specified file. 
+# --metadata-file some-metadata-file.json:  To output build metadata such as the image digest, pass the --metadata-file flag.
+#                                           The metadata will be written as a JSON object to the specified file.
 #                                           The directory of the specified file must already exist and be writable.
 ###########################################################################################
 # -f or --file: Name of the Dockerfile (default: PATH/Dockerfile)
-#               Specifies the filepath of the Dockerfile to use. 
-#               If unspecified, a file named Dockerfile at the root of the build context is used by default.               
+#               Specifies the filepath of the Dockerfile to use.
+#               If unspecified, a file named Dockerfile at the root of the build context is used by default.
 ###########################################################################################
 
-docker buildx build --output type=registry \
-                    --metadata-file ${METADATA_FILE_NAME} \
-                    --build-context java_tar_gz_file_dir=${JAVA_TAR_GZ_FILE_DIR}  \
-                    --build-arg JAVA_TAR_GZ_FILE_NAME=${JAVA_TAR_GZ_FILE_NAME} \
-                    --build-arg JAVA_EXTRACTED_DIRECTORY_NAME=${JAVA_EXTRACTED_DIRECTORY_NAME} \
-                    -f ${DOCKERFILE_PATH} \
-                    -t ${BASE_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} .
+sudo docker buildx build \
+        --output type=registry \
+        --metadata-file ${METADATA_FILE_NAME} \
+        --build-context java_tar_gz_file_dir=${JAVA_TAR_GZ_FILE_DIR}  \
+        --build-arg JAVA_TAR_GZ_FILE_NAME=${JAVA_TAR_GZ_FILE_NAME} \
+        --build-arg JAVA_EXTRACTED_DIRECTORY_NAME=${JAVA_EXTRACTED_DIRECTORY_NAME} \
+        -f ${DOCKERFILE_PATH} \
+        -t ${BASE_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} .
 
 
 

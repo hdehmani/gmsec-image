@@ -1,0 +1,23 @@
+Follow instructions here: https://docs.docker.com/engine/install/ubuntu/#install-from-a-package
+This helps install Docker manually
+Go here to download the individual components: https://download.docker.com/linux/ubuntu/dists/jammy/pool/stable/amd64/
+
+Commands
+docker compose version: v2.19.1
+docker buildx version: v0.11.1 b4df085
+docker version command (engine = 24.0.4, containerd = 1.6.21, runc = 1.1.7, docker-init = 0.19.0):
+        docker ce version = 24.0.4
+        docker ce cli version = 24.0.4
+        containerd.io version = 1.6.21
+
+Install .deb packages as follows
+
+sudo dpkg -i ./containerd.io_1.6.21-1_amd64.deb \
+  ./docker-ce_24.0.4-1~ubuntu.22.04~jammy_amd64.deb \
+  ./docker-ce-cli_24.0.4-1~ubuntu.22.04~jammy_amd64.deb \
+  ./docker-buildx-plugin_0.11.1-1~ubuntu.22.04~jammy_amd64.deb \
+  ./docker-compose-plugin_2.19.1-1~ubuntu.22.04~jammy_amd64.deb
+
+
+
+  sudo dpkg -i ./containerd.io_1.6.21-1_amd64.deb ./docker-ce_24.0.4-1~ubuntu.22.04~jammy_amd64.deb ./docker-ce-cli_24.0.4-1~ubuntu.22.04~jammy_amd64.deb ./docker-buildx-plugin_0.11.1-1~ubuntu.22.04~jammy_amd64.deb ./docker-compose-plugin_2.19.1-1~ubuntu.22.04~jammy_amd64.deb
